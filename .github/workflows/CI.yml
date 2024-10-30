@@ -1,0 +1,73 @@
+name: Rust
+on:
+  pull_request:
+    branches: main
+  release:
+    types: published
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: 3.12
+      # - name: numpy
+      #   run: pip install numpy
+      # - name: pillow
+      #   run: pip install pillow
+      # - name: block
+      #   run: ./benches/block.sh
+      # - name: bench
+      #   run: rustup run nightly cargo bench
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: cleanup
+        run: rm -fr book/ sandbox/ tests/
+      - name: package
+        run: cargo package
+      - name: login
+        if: github.event_name == 'release'
+        run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
+      - name: publish
+        if: github.event_name == 'release'
+        run: cargo publish
+  test:
+    if: github.event_name != 'release'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        toolchain:
+          - beta
+          - stable
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          # components: clippy, rustfmt
+          default: true
+          toolchain: ${{ matrix.toolchain }}
+      - name: build
+        run: cargo build --release
+      # - name: clippy
+      #   run: cargo clippy -- -D warnings
+      # - name: clippy
+      #   run: cargo clippy --tests
+      # - name: doc
+      #   run: cargo rustdoc --release -- --html-in-header docs/katex.html
+      # - name: fmt
+      #   run: cargo fmt --all -- --check
+      - name: test
+        run: cargo test --release
