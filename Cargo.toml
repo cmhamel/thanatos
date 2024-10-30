@@ -1,0 +1,28 @@
+[package]
+name = "thanatos"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+byteorder = "1.5.0"
+chrono = "0.4.38"
+clap = { version = "4.5.20", features = ["derive"] }
+evalexpr = "12.0.1"
+min-max = "0.1.8"
+nalgebra = "0.33.2"
+ndarray = "0.16.1"
+rayon = "1.10.0"
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json = "1.0.132"
+stl_io = "0.8.2"
+
+[features]
+profile = []
+
+[profile.release]
+codegen-units = 1
+debug = true
+lto = false
