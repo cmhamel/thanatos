@@ -1,161 +1,44 @@
 use byteorder::{LittleEndian, WriteBytesExt};
 use nalgebra::{point, Point3, Vector3};
-// use rayon::prelude::*;
+// use pyo3::prelude::*;
+use rayon::prelude::*;
 use std::{collections::HashMap, fs, io::Write};
+use std::marker::Sync;
 
-use crate::geometry::Primitive;
+use crate::geometry::GeometricPrimitive;
 
 #[cfg(feature = "profile")]
 use std::time::Instant;
-// use chrono::Utc;
 
 // ==========================================================
 // ======================= Data types =======================
 // ==========================================================
 
 pub type Point = Point3<f64>;
-// pub type Vector = Vector3<f64>;
-// pub const ORIGIN: Point3<f64> = Point3::new(0.0, 0.0, 0.0);
-// pub type CompiledFunction = dyn Fn(Point) -> f64 + Sync;
-// pub type SymbolicExpression<'a> = &'a str;
 
-// pub struct Domain {
-//     pub x: usize,
-//     pub y: usize,
-//     pub z: usize,
-//     pub scale: f64,
-//     pub min_point: Point,
-// }
-
-// impl Domain {
-//     pub fn new(span: [usize; 3], scale: f64) -> Self {
-//         let min_point = point![
-//             -1. * (span[0] as f64) * scale / 2.,
-//             -1. * (span[1] as f64) * scale / 2.,
-//             -1. * (span[2] as f64) * scale / 2.
-//         ];
-
-//         Self {
-//             x: span[0],
-//             y: span[1],
-//             z: span[2],
-//             scale: scale,
-//             min_point: min_point,
-//         }
-//     }
-// }
-
-// Marching cubes algorithm (discrete data version)
-// pub fn marching_cubes_buffer(buffer: &VoxelGrid, threshold: f64) -> Mesh {
-//     let mut target_mesh = Mesh::new_empty();
-
-//     let edge_table = &EDGE_TABLE.map(|e| format!("{:b}", e));
-
-//     let vertices = (0..buffer.size_x - 1)
-//         // .into_par_iter()
-//         .into_iter()
-//         .map(|x| {
-//             (0..buffer.size_y - 1)
-//                 .map(|y| {
-//                     (0..buffer.size_z - 1)
-//                         .map(|z| {
-//                             // corner positions
-//                             // There's some redundancy/overlap that could be optimized
-//                             let corner_indices = buffer.voxel_corner_indices(x, y, z);
-
-//                             let corner_values = corner_indices
-//                                 .iter()
-//                                 .map(|p| buffer.get(p[0], p[1], p[2]))
-//                                 .collect::<Vec<f64>>();
-
-//                             let corner_positions = corner_indices
-//                                 .iter()
-//                                 .map(|p| {
-//                                     add_points(
-//                                         buffer.min_point,
-//                                         point![p[0] as f64, p[1] as f64, p[2] as f64]
-//                                             * buffer.scale,
-//                                     )
-//                                 })
-//                                 .collect::<Vec<Point>>();
-
-//                             // Calculating state
-//                             let state =
-//                                 get_state(&corner_values, threshold).expect("Could not get state");
-
-//                             // edges
-//                             // Example: 11001100
-//                             // Edges 2, 3, 6, 7 are intersected
-//                             let edges_bin_string = &edge_table[state];
-
-//                             // Indices of edge endpoints (List of pairs)
-//                             let (endpoint_indices, edges_to_use) =
-//                                 get_edge_endpoints(edges_bin_string, &CORNER_POINT_INDICES);
-
-//                             // finding midpoints of edges
-//                             let edge_points = get_edge_midpoints(
-//                                 endpoint_indices,
-//                                 edges_to_use,
-//                                 corner_positions,
-//                                 corner_values,
-//                                 threshold,
-//                             );
-
-//                             // adding triangle verts
-//                             let new_verts = triangle_verts_from_state(edge_points, state);
-//                             new_verts
-//                         })
-//                         .flatten()
-//                         .collect::<Vec<Point>>()
-//                 })
-//                 .flatten()
-//                 .collect::<Vec<Point>>()
-//         })
-//         .flatten()
-//         .collect::<Vec<Point>>();
-
-//     // Adding vertices to the mesh
-//     target_mesh.set_vertices(vertices);
-
-//     // Creating triangles from the vertices
-//     target_mesh.create_triangles();
-
-//     println!(
-//         "\nCube count: {}",
-//         buffer.size_x * buffer.size_y * buffer.size_z
-//     );
-//     return target_mesh;
-// }
-
+// #[pyfunction]
 pub fn mesh<T>(
-    // expression: SymbolicExpression,
     primitive: T,
-    // min_point: Point,
     x_count: usize,
     y_count: usize,
     z_count: usize,
     threshold: f64,
     scale: f64,
 ) -> Mesh 
-where T: Primitive {
+where T: GeometricPrimitive + Sync {
     #[cfg(feature = "profile")]
     let time = Instant::now();
     println!("bounding box = {:?}", primitive.bounding_box());
-    // let scales = primitive.bounding_box().widths;
-    let min_point = primitive.bounding_box().origin;
-    let min_point = Point::new(min_point.x, min_point.y, min_point.z);
-    println!("min_point = {:?}", min_point);
+    let min_point = primitive.bounding_box().min;
+    let max_point = primitive.bounding_box().max;
     let mut target_mesh = Mesh::new_empty();
 
     let edge_table = &EDGE_TABLE.map(|e| format!("{:b}", e));
 
-    // let mut evaluated : HashMap<[usize; 3], f64>= HashMap::new();
 
     let vertices = (0..x_count)
-        // .into_par_iter()
-        .into_iter()
+        .into_par_iter()
         .map(|x| {
-            // let mut context = init_context(); // Avoid thread confusion by creating here
             (0..y_count)
                 .map(|y| {
                     (0..z_count)
@@ -164,11 +47,9 @@ where T: Primitive {
                             // There's some redundancy/overlap that could be optimized
                             // let corner_positions = get_corner_positions(&primitive, x, y, z);
                             let corner_positions = get_corner_positions(
-                              min_point, 
-                            //   x, y, z, scale,
+                              min_point, max_point,
                               x, y, z,
                               scale,
-                            //   scales.x, scales.y, scales.z,
                               x_count, y_count, z_count
                             );
 
@@ -176,14 +57,7 @@ where T: Primitive {
                             let eval_corners = corner_positions
                                 .iter()
                                 .map(|p| {
-                                    // update_context(&mut context, *p);
-                                    // eval_with_context(&expression, &context)
-                                    //     .unwrap()
-                                    //     .as_float()
-                                    //     .unwrap()
-                                    // let p_temp = Vector3::<f64>::new(p[0], p[1], p[2]);
-                                    // primitive.frep(&p_temp)
-                                    primitive.frep(&p)
+                                    primitive.sdf(&p)
                                 })
                                 .collect();
 
@@ -262,26 +136,20 @@ fn triangle_verts_from_state(edge_points: HashMap<usize, Vec<f64>>, state: usize
 
 // Get the point coordinates at the 8 vertices of the cube
 fn get_corner_positions(
-  min_point: Point, 
+  min_point: Point, max_point: Point,
   x: usize, y: usize, z: usize, 
   scale: f64,
-//   scale_x: f64, scale_y: f64, scale_z: f64,
   x_count: usize, y_count: usize, z_count: usize
 ) -> Vec<Point> {
-// fn get_corner_positions<T>(primitive: &T, x: usize, y: usize, z: usize) -> Vec<Point>
-// where T: Primitive {
-    // let bb = primitive.bounding_box();
-    // // let bb = Point::new(bb.)
-    // let min_point = bb.origin;
-    // let min_point = Point::new(min_point.x, min_point.y, min_point.z);
-    // let scale_x = bb.widths.x;
-    // let scale_y = bb.widths.y;
-    // let scale_z = bb.widths.z;
+
 
     // could scale by different axes eventually
     let scale_x = scale;
     let scale_y = scale;
     let scale_z = scale;
+    // let scale_x = (max_point.x - min_point.x) / x_count as f64;
+    // let scale_y = (max_point.y - min_point.y) / y_count as f64;
+    // let scale_z = (max_point.z - min_point.z) / z_count as f64;
 
     let xf = scale_x * x as f64;
     let yf = scale_y * y as f64;

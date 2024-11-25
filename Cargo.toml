@@ -3,26 +3,17 @@ name = "thanatos"
 version = "0.1.0"
 edition = "2021"
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+approx = "0.5.1"
+bbox = "0.14.1"
 byteorder = "1.5.0"
-chrono = "0.4.38"
-clap = { version = "4.5.20", features = ["derive"] }
-evalexpr = "12.0.1"
 min-max = "0.1.8"
-nalgebra = "0.33.2"
-ndarray = "0.16.1"
+nalgebra = { version = "0.31.4", features = ["serde-serialize"] }
+pyo3 = "0.22.0"
 rayon = "1.10.0"
-serde = { version = "1.0.214", features = ["derive"] }
-serde_json = "1.0.132"
-stl_io = "0.8.2"
-
-[features]
-profile = []
-
-[profile.release]
-codegen-units = 1
-debug = true
-lto = false
+serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.133"

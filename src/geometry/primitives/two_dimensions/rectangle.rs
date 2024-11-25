@@ -1,7 +1,11 @@
-use super::base::*;
+use crate::geometry::base::*;
 use min_max::*;
+use pyo3::prelude::*;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug)]
+#[pyclass]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub struct Rectangle {
   lower_corner: Point,
   length: f64,
@@ -9,7 +13,9 @@ pub struct Rectangle {
 }
 
 // TODO also add a center option
+#[pymethods]
 impl Rectangle {
+  #[new]
   pub fn new(length: f64, height: f64) -> Self {
     let lower_corner = Point::new(0., 0., 0.);
     Rectangle{
@@ -20,17 +26,15 @@ impl Rectangle {
   }
 }
 
-impl BoundingBox for Rectangle {
-  fn bounding_box(&self) -> HyperRectangle {
-    HyperRectangle::new(
-      self.lower_corner,
-      Point::new(self.length, self.height, 0.)
+impl GeometricPrimitive for Rectangle {
+  fn bounding_box(&self) -> BoundingBox {
+    BoundingBox::new(
+      &self.lower_corner,
+      &Widths::new(self.length, self.height, 0.0)
     )
   }
-}
 
-impl Frep for Rectangle {
-  fn frep(&self, v: &Point) -> f64 {
+  fn sdf(&self, v: &Point) -> f64 {
     let x = v[0];
     let y = v[1];
     let dx = self.length;

@@ -2,3 +2,4 @@
 perf.data
 Cargo.lock
 *.stl
+venv/
