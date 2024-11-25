@@ -2,6 +2,12 @@
 name = "thanatos"
 version = "0.1.0"
 edition = "2021"
+license-file = "LICENSE"
+description = "CSG geometries in rust"
+repository = "https://github.com/cmhamel/thanatos"
+homepage = "https://github.com/cmhamel/thanatos"
+keywords = ["graphics"]
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
