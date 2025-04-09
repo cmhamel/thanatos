@@ -1,30 +1,26 @@
+use crate::geometry::Primitive;
 use crate::geometry::base::*;
 use min_max::min;
+use pyo3::prelude::*;
 use serde::{Serialize, Deserialize};
 
+#[pyclass]
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(tag = "type")]
-pub struct Union<A, B>
-where A: GeometricPrimitive,
-      B: GeometricPrimitive {
-  left: A,
-  right: B
+pub struct Union {
+  left: Box<Primitive>,
+  right: Box<Primitive>
 }
 
-impl<A, B> Union<A, B>
-where A: GeometricPrimitive,
-      B: GeometricPrimitive {
-  pub fn new(left: A, right: B) -> Self {
+impl Union {
+  pub fn new(left: Primitive, right: Primitive) -> Self {
     Union {
-      left: left,
-      right: right
+      left: Box::new(left),
+      right: Box::new(right)
     }
   }
 }
 
-impl<A, B> GeometricPrimitive for Union<A, B>
-where A: GeometricPrimitive,
-      B: GeometricPrimitive {
+impl GeometricPrimitive for Union {
   fn bounding_box(&self) -> BoundingBox {
     let bb = self.left.bounding_box().union(&self.right.bounding_box());
     bb

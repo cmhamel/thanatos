@@ -1,26 +1,26 @@
+use crate::geometry::Primitive;
 use crate::geometry::base::*;
 use nalgebra;
+use pyo3::prelude::*;
 use serde::{Serialize, Deserialize};
 
+#[pyclass]
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(tag = "type")]
-pub struct Translation<T: GeometricPrimitive> {
+pub struct Translation {
   translation: nalgebra::Translation3<f64>,
-  primitive: T
+  primitive: Box<Primitive>
 }
 
-impl<T> Translation<T> 
-where T: GeometricPrimitive {
-  pub fn new(primitive: T, x: f64, y: f64, z: f64) -> Self {
+impl Translation {
+  pub fn new(primitive: Primitive, x: f64, y: f64, z: f64) -> Self {
     Translation {
       translation: nalgebra::Translation3::new(x, y, z),
-      primitive: primitive
+      primitive: Box::new(primitive)
     }
   }
 }
 
-impl<T> GeometricPrimitive for Translation<T> 
-where T: GeometricPrimitive {
+impl GeometricPrimitive for Translation {
   fn bounding_box(&self) -> BoundingBox {
     self.primitive.bounding_box().transform(&self.translation.to_homogeneous())
   }
@@ -31,7 +31,6 @@ where T: GeometricPrimitive {
   }
 }
 
-pub fn translate<T>(primitive: T, x: f64, y: f64, z: f64) -> Translation<T>
-where T: GeometricPrimitive {
-  Translation::<T>::new(primitive, x, y, z)
+pub fn translate(primitive: Primitive, x: f64, y: f64, z: f64) -> Primitive {
+  Primitive::Translation(Translation::new(primitive, x, y, z))
 }

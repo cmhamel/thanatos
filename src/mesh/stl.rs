@@ -7,7 +7,7 @@ use std::marker::Sync;
 
 use crate::geometry::GeometricPrimitive;
 
-#[cfg(feature = "profile")]
+// #[cfg(feature = "profile")]
 use std::time::Instant;
 
 // ==========================================================
@@ -16,7 +16,6 @@ use std::time::Instant;
 
 pub type Point = Point3<f64>;
 
-// #[pyfunction]
 pub fn mesh<T>(
     primitive: T,
     x_count: usize,
@@ -26,11 +25,10 @@ pub fn mesh<T>(
     scale: f64,
 ) -> Mesh 
 where T: GeometricPrimitive + Sync {
-    #[cfg(feature = "profile")]
+    // #[cfg(feature = "profile")]
     let time = Instant::now();
     println!("bounding box = {:?}", primitive.bounding_box());
     let min_point = primitive.bounding_box().min;
-    let max_point = primitive.bounding_box().max;
     let mut target_mesh = Mesh::new_empty();
 
     let edge_table = &EDGE_TABLE.map(|e| format!("{:b}", e));
@@ -47,7 +45,7 @@ where T: GeometricPrimitive + Sync {
                             // There's some redundancy/overlap that could be optimized
                             // let corner_positions = get_corner_positions(&primitive, x, y, z);
                             let corner_positions = get_corner_positions(
-                              min_point, max_point,
+                              min_point,
                               x, y, z,
                               scale,
                               x_count, y_count, z_count
@@ -102,7 +100,7 @@ where T: GeometricPrimitive + Sync {
     // Creating trianglses from the vertices
     target_mesh.create_triangles();
 
-    #[cfg(feature = "profile")]
+    // #[cfg(feature = "profile")]
     println!("Triangles created in {:?} seconds", time.elapsed());
 
     println!("\nCube count: {}", x_count * y_count * z_count);
@@ -136,7 +134,7 @@ fn triangle_verts_from_state(edge_points: HashMap<usize, Vec<f64>>, state: usize
 
 // Get the point coordinates at the 8 vertices of the cube
 fn get_corner_positions(
-  min_point: Point, max_point: Point,
+  min_point: Point,
   x: usize, y: usize, z: usize, 
   scale: f64,
   x_count: usize, y_count: usize, z_count: usize
@@ -390,63 +388,6 @@ pub fn interpolate_points(p0: Point, p1: Point, t: f64) -> Vec<f64> {
 //     }
 // }
 
-// ===========================================================
-// =========== Some Distance Equations to Test With ==========
-// ===========================================================
-// mostly thanks to https://iquilezles.org/
-
-// pub struct SDF {}
-
-// impl SDF {
-//     pub fn new() {}
-
-//     pub fn sphere(p: Point, center: Point, r: f64) -> f64 {
-//         distance(&p, &center) - r
-//     }
-
-//     pub fn rounded_box(p: Point, c: Point, s: Vector, r: f64) -> f64 {
-//         // Modified to account for the radius without changing the size of the box
-//         //
-//         let po = p - c;
-//         let pf: Vector = vector![po.x.abs(), po.y.abs(), po.z.abs()] - (s - vector![r, r, r]);
-//         return vector![pf.x.max(0.0), pf.y.max(0.0), pf.z.max(0.0)].norm()
-//             + pf.x.max(pf.y.max(pf.z)).min(0.0)
-//             - r;
-//     }
-
-//     pub fn gyroid(p: Point, f: f64, t: f64) -> f64 {
-//         // f: frequency
-//         // t: thickness
-
-//         let g = (f * p.x).sin() * (f * p.y).cos()
-//             + (f * p.y).sin() * (f * p.z).cos()
-//             + (f * p.z).sin() * (f * p.x).cos();
-
-//         // g + 0.75
-//         (g + f).abs() - t
-//     }
-
-//     ////////// Boolean operations //////////
-//     pub fn boolean_union(d1: f64, d2: f64, r: f64) -> f64 {
-//         // f64::min(d1, d2)
-//         smooth_min(d1, d2, r)
-//     }
-
-//     pub fn boolean_union_list(sdfs: Vec<f64>, r: f64) -> f64 {
-//         sdfs.iter().fold(f64::INFINITY, |a, &b| smooth_min(a, b, r))
-//     }
-
-//     pub fn boolean_subtraction(d1: f64, d2: f64, r: f64) -> f64 {
-//         // f64::max(d1, -d2)
-//         -smooth_min(-d1, d2, r)
-//     }
-
-//     pub fn boolean_intersection(d1: f64, d2: f64, r: f64) -> f64 {
-//         // f64::max(d1, d2)
-//         -smooth_min(-d1, -d2, r)
-//     }
-// }
-
 // pub fn smooth_min(a: f64, b: f64, mut k: f64) -> f64 {
 //     // polynomial smooth min
 
@@ -478,6 +419,7 @@ pub fn interpolate_points(p0: Point, p1: Point, t: f64) -> Vec<f64> {
 // ========================= Meshes =========================
 // ==========================================================
 
+// #[pyclass]
 #[derive(Clone)]
 pub struct Mesh {
     // vertices : [[x1, y1, z1], [x2, y2, z2]...]
@@ -487,11 +429,14 @@ pub struct Mesh {
     pub tris: Vec<[usize; 3]>, // new triangles
 }
 
+// #[pyclass]
 #[derive(Debug)]
 pub struct MarchingCubesError;
 
+// #[pymethods]
 impl Mesh {
     //create a new empty Mesh
+    // #[new]
     pub fn new_empty() -> Self {
         Self {
             vertices: Vec::new(),

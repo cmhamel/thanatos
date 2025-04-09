@@ -4,15 +4,12 @@ use serde::{Deserialize, Serialize};
 
 #[pyclass]
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(tag = "type")]
 pub struct Torus {
   a: f64,
   c: f64
 }
 
-#[pymethods]
 impl Torus {
-  #[new]
   pub fn new(a: f64, c: f64) -> Self {
     Torus {
       a: a,

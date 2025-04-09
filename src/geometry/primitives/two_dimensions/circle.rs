@@ -1,18 +1,14 @@
 use crate::geometry::base::*;
 use pyo3::prelude::*;
 use serde::{self, Deserialize, Serialize};
-use serde_json::{self, Result};
 
 #[pyclass]
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(tag = "type")]
 pub struct Circle {
   radius: f64
 }
 
-#[pymethods]
 impl Circle {
-  #[new]
   pub fn new(radius: f64) -> Self {
     Circle {
       radius: radius
