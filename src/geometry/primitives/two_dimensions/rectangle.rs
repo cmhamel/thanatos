@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 
 #[pyclass]
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(tag = "type")]
 pub struct Rectangle {
   lower_corner: Point,
   length: f64,
@@ -13,9 +12,7 @@ pub struct Rectangle {
 }
 
 // TODO also add a center option
-#[pymethods]
 impl Rectangle {
-  #[new]
   pub fn new(length: f64, height: f64) -> Self {
     let lower_corner = Point::new(0., 0., 0.);
     Rectangle{

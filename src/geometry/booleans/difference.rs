@@ -1,30 +1,26 @@
+use crate::geometry::Primitive;
 use crate::geometry::base::*;
 use min_max::max;
+use pyo3::prelude::*;
 use serde::{Serialize, Deserialize};
 
+#[pyclass]
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(tag = "type")]
-pub struct Difference<A, B>
-where A: GeometricPrimitive,
-      B: GeometricPrimitive {
-  left: A,
-  right: B
+pub struct Difference {
+  left: Box<Primitive>,
+  right: Box<Primitive>
 }
 
-impl<A, B> Difference<A, B>
-where A: GeometricPrimitive,
-      B: GeometricPrimitive {
-  pub fn new(left: A, right: B) -> Self {
+impl Difference {
+  pub fn new(left: Primitive, right: Primitive) -> Self {
     Difference {
-      left: left,
-      right: right
+      left: Box::new(left),
+      right: Box::new(right)
     }
-  }     
+  }
 }
 
-impl<A, B> GeometricPrimitive for Difference<A, B>
-where A: GeometricPrimitive,  
-      B: GeometricPrimitive {
+impl GeometricPrimitive for Difference {
   fn bounding_box(&self) -> BoundingBox {
     self.left.bounding_box()
   }

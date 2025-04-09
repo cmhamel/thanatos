@@ -1,30 +1,26 @@
+use crate::geometry::Primitive;
 use crate::geometry::base::*;
 use min_max::max;
+use pyo3::prelude::*;
 use serde::{Serialize, Deserialize};
 
+#[pyclass]
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(tag = "type")]
-pub struct Intersection<A, B>
-where A: GeometricPrimitive,
-      B: GeometricPrimitive {
-  left: A,
-  right: B
+pub struct Intersection {
+  left: Box<Primitive>,
+  right: Box<Primitive>
 }
 
-impl<A, B> Intersection<A, B>
-where A: GeometricPrimitive,
-      B: GeometricPrimitive {
-  pub fn new(left: A, right: B) -> Self {
+impl Intersection {
+  pub fn new(left: Primitive, right: Primitive) -> Self {
     Intersection {
-      left: left,
-      right: right
+      left: Box::new(left),
+      right: Box::new(right)
     }
   }
 }
 
-impl<A, B> GeometricPrimitive for Intersection<A, B>
-where A: GeometricPrimitive,
-      B: GeometricPrimitive {
+impl GeometricPrimitive for Intersection {
   fn bounding_box(&self) -> BoundingBox {
     self.left.bounding_box().intersection(&self.right.bounding_box())
   }

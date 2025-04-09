@@ -4,16 +4,13 @@ use serde::{Deserialize, Serialize};
 
 #[pyclass]
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(tag = "type")]
 pub struct Gyroid {
   box_length: f64,
   f: f64,
   t: f64
 }
 
-#[pymethods]
 impl Gyroid {
-  #[new]
   pub fn new(box_length: f64, f: f64, t: f64) -> Self {
     Gyroid {
       box_length: box_length,
