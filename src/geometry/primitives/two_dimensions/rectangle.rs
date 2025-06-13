@@ -4,7 +4,7 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[pyclass]
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub struct Rectangle {
   lower_corner: Point,

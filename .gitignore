@@ -1,5 +1,8 @@
 /target
 perf.data
 Cargo.lock
+*.exo
+*.json
+*.spn
 *.stl
 venv/

@@ -2,7 +2,7 @@ use crate::geometry::base::*;
 use nalgebra::{self, Vector3};
 use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(tag = "type")]
 pub struct Rotation<T: GeometricPrimitive> {
   rotation: nalgebra::Rotation3<f64>,

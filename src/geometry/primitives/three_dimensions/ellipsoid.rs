@@ -3,7 +3,7 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[pyclass]
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(tag = "type")]
 pub struct Ellipsoid {
   a: f64,

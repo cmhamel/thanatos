@@ -7,7 +7,7 @@ pub type Point = nalgebra::Point3<f64>;
 pub type Widths = nalgebra::Point3<f64>;
 
 // base trait for all primitives
-pub trait GeometricPrimitive {
+pub trait GeometricPrimitive: Copy {
   fn bounding_box(&self) -> BoundingBox;
   fn sdf(&self, v: &Point) -> f64;
 }

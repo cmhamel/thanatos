@@ -2,7 +2,7 @@ use crate::geometry::base::*;
 use min_max::max;
 use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(tag = "type")]
 pub struct Difference<A, B>
 where A: GeometricPrimitive,

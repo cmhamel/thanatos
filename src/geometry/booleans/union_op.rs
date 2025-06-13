@@ -2,7 +2,7 @@ use crate::geometry::base::*;
 use min_max::min;
 use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(tag = "type")]
 pub struct Union<A, B>
 where A: GeometricPrimitive,

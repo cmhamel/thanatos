@@ -4,7 +4,7 @@ use serde::{self, Deserialize, Serialize};
 use serde_json::{self, Result};
 
 #[pyclass]
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(tag = "type")]
 pub struct Circle {
   radius: f64
